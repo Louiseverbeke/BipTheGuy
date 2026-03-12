@@ -14,6 +14,7 @@ struct ContentView: View {
     @State private var isFullSize = true
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var bipImage = Image("clown")
+    @AppStorage("savedImageData") private var savedImageData: Data?
     
     var body: some View {
         VStack {
@@ -30,23 +31,36 @@ struct ContentView: View {
                         isFullSize = true // will go from 90% to 100% size but using the .spring animation
                     }
                 }
-               
+            
             Spacer()
             
             PhotosPicker(selection: $selectedPhoto, matching: .images, preferredItemEncoding: .automatic) {
                 Label("Photo library", systemImage: "photo.fill.on.rectangle.fill")
-                            
+                    .font(.title2)
+                
             }
+            .buttonStyle(.glassProminent)
+            .tint(.green.opacity(0.7))
+            .controlSize(.large)
             .onChange(of: selectedPhoto) {
                 Task {
-                    guard let selectedImage = try? await
-                            selectedPhoto?.loadTransferable(type: Image.self) else {
+                    guard let selectedPhoto = selectedPhoto,
+                          let imageData = try? await
+                            selectedPhoto
+                        .loadTransferable(type:
+                                            Data.self) else {
                         print("😡ERROR: Could not get Image from loadTransferrable")
                         return
                     }
-                    bipImage = selectedImage
+                    savedImageData = imageData
+                    
+                    if let uiImage = UIImage(data: imageData) {
+                        bipImage = Image(uiImage: uiImage)
+                    }
+                    
                 }
             }
+        
         }
         .padding()
     }
@@ -71,3 +85,4 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
+
