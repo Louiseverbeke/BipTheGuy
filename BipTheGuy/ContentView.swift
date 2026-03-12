@@ -10,6 +10,8 @@ import AVFAudio
 
 struct ContentView: View {
     @State private var audioPlayer: AVAudioPlayer!
+    @State private var isFullSize = true
+    
     var body: some View {
         VStack {
             Spacer()
@@ -17,10 +19,15 @@ struct ContentView: View {
             Image("clown")
                 .resizable()
                 .scaledToFit()
+                .scaleEffect(isFullSize ? 1.0 : 0.9)
                 .onTapGesture {
                     playSound(soundName: "punchSound")
+                    isFullSize = false // will immediately shrink using .scaleEffect to 90% of size
+                    withAnimation (.spring(response: 0.3, dampingFraction: 0.3)) {
+                        isFullSize = true // will go from 90% to 100% size but using the .spring animation
+                    }
                 }
-            
+               
             Spacer()
             
             Button {
